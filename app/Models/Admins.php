@@ -27,22 +27,5 @@ class Admin extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    // 🔐 Optional: Access Control Helpers
-
-    public function canManageUsers()
-    {
-        return true; // Add logic if you have roles within admins
-    }
-
-    public function canManageProducts()
-    {
-        return true;
-    }
-
-    public function canManageOrders()
-    {
-        return true;
-    }
-
     // 📁 Optional: Activity logs, audit, or dashboard-specific relations can go here
 }

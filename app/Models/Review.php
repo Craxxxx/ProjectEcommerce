@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use App\Models\User;
+use App\Models\Products;
+
 class Review extends Model
 {
     use HasFactory;
@@ -29,12 +32,7 @@ class Review extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Products::class);
     }
 
-    // 📊 Optional Helper: Is review recent?
-    public function isRecent()
-    {
-        return $this->created_at >= now()->subDays(7);
-    }
 }

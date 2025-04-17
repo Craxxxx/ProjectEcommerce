@@ -8,13 +8,14 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\DB;
 
-use App\Models\Product;
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\Carts;
+use App\Models\Orders;
 use App\Models\Address;
 use App\Models\Review;
+
+//list of things i should add in this user model
+// 1. Email Verification
+// 
 
 class User extends Authenticatable
 {
@@ -39,12 +40,12 @@ class User extends Authenticatable
 
     public function cart()
     {
-        return $this->hasOne(Cart::class);
+        return $this->hasOne(Carts::class);
     }
 
     public function orders()
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(Orders::class);
     }
 
     public function addresses()
@@ -56,86 +57,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(Review::class);
     }
-
-    // 📦 Cart Management
-
-    public function addToCart(Product $product, int $quantity = 1)
-    {
-        $cart = $this->cart()->firstOrCreate([]);
-
-        $item = $cart->items()->where('product_id', $product->id)->first();
-
-        if ($item) {
-            $item->quantity += $quantity;
-            $item->save();
-        } else {
-            $cart->items()->create([
-                'product_id' => $product->id,
-                'quantity'   => $quantity,
-            ]);
-        }
-
-        return $item ?? true;
-    }
-
-    public function removeFromCart(Product $product)
-    {
-        $cart = $this->cart;
-        if (!$cart) return false;
-
-        return $cart->items()->where('product_id', $product->id)->delete();
-    }
-
-    public function clearCart()
-    {
-        $cart = $this->cart;
-        if (!$cart) return false;
-
-        return $cart->items()->delete();
-    }
-
-    // 🧾 Order Utilities
-
-    public function placeOrder(Address $shippingAddress, Address $billingAddress = null)
-    {
-        $cart = $this->cart;
-        if (!$cart || $cart->items->isEmpty()) {
-            throw new \Exception("Cart is empty.");
-        }
-
-        return DB::transaction(function () use ($cart) {
-            $total = $cart->items->sum(fn ($item) => $item->product->price * $item->quantity);
-
-            $order = $this->orders()->create([
-                'total_amount' => $total,
-                'status'       => 'pending',
-            ]);
-
-            foreach ($cart->items as $item) {
-                $order->items()->create([
-                    'product_id' => $item->product_id,
-                    'quantity'   => $item->quantity,
-                    'price'      => $item->product->price,
-                ]);
-
-                $item->product->decrement('stock', $item->quantity);
-            }
-
-            $this->clearCart();
-
-            return $order;
-        });
-    }
-
-    // 📬 Default Address Helpers
-
-    public function getDefaultShippingAddress()
-    {
-        return $this->addresses()->where('is_default_shipping', true)->first();
-    }
-
-    public function getDefaultBillingAddress()
-    {
-        return $this->addresses()->where('is_default_billing', true)->first();
-    }
+   
 }

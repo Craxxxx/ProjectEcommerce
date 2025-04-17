@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use App\Models\User;
+
 class Address extends Model
 {
     use HasFactory;
@@ -31,24 +33,4 @@ class Address extends Model
         return $this->belongsTo(User::class);
     }
 
-    // 🛠️ Utility Methods (Optional)
-
-    public function setAsDefaultShipping()
-    {
-        // Reset others
-        static::where('user_id', $this->user_id)->update(['is_default_shipping' => false]);
-        $this->update(['is_default_shipping' => true]);
-    }
-
-    public function setAsDefaultBilling()
-    {
-        // Reset others
-        static::where('user_id', $this->user_id)->update(['is_default_billing' => false]);
-        $this->update(['is_default_billing' => true]);
-    }
-
-    public function fullAddress()
-    {
-        return "{$this->address_line1}, {$this->city}, {$this->postal_code}, {$this->country}";
-    }
 }
